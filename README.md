@@ -1,7 +1,7 @@
 # AeroVigil
 
 Predictive Fatigue Analytics for Aviation Safety Teams
-
+** Live App:** https://aerovigil-demo.streamlit.app
 AeroVigil is a prototype fatigue risk analysis tool designed to help aviation safety departments identify potential crew fatigue risks using operational schedule data.
 
 ## Problem
