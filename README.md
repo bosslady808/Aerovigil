@@ -1,49 +1,77 @@
 # AeroVigil
 
-Predictive Fatigue Analytics for Aviation Safety Teams
-** Live App:** https://aerovigil-demo.streamlit.app
-AeroVigil is a prototype fatigue risk analysis tool designed to help aviation safety departments identify potential crew fatigue risks using operational schedule data.
+**Predictive Fatigue Risk Analytics for Aviation Safety**
 
-## Problem
+AeroVigil is a prototype aviation safety tool designed to estimate **crew fatigue risk** using key operational factors such as duty hours, flight segments, time zone changes, rest periods, and circadian disruption.
 
-Airlines must manage fatigue risk under Fatigue Risk Management Systems (FRMS).  
-However, many operators lack simple tools to quickly evaluate fatigue risk across multiple crew schedules.
+This project was built as an early proof-of-concept for a larger vision: helping airlines and aviation safety teams identify fatigue risk **before flights operate**.
 
-## Solution
+---
 
-AeroVigil analyzes crew scheduling factors and calculates a fatigue risk score based on:
+## Live Demo
 
-- Duty hours
-- Flight segments
-- Time zone crossings
-- Rest hours
-- Circadian disruption
+👉 **AeroVigil App:**  
+https://aerovigil-demo.streamlit.app
 
-The system then flags elevated fatigue risk and explains the operational drivers behind the risk.
+---
 
-## Current Features
+## Overview
 
-- Fatigue risk scoring algorithm
-- CSV crew schedule analysis
-- Fatigue risk ranking dashboard
-- High-risk crew alerts
-- Fatigue driver explanations
-- Fatigue risk heatmap visualization
+Fatigue remains one of the most critical human factors issues in aviation safety. AeroVigil explores how operational inputs from crew scheduling and duty periods can be converted into a clear **fatigue risk score**.
 
-## Example Output
+This prototype allows users to experiment with different operational scenarios and instantly see how fatigue risk changes.
 
-| Pilot | Fatigue Score | Risk | Why Flagged |
-|------|------|------|------|
-| Mike | 82 | CRITICAL | Long duty period, Short rest, Circadian disruption |
-| John | 72 | HIGH | Multiple time zones, High segments |
-| Sarah | 21 | LOW | No major fatigue drivers |
+---
 
-## Running the Prototype
+## Features
 
-AeroVigil is a prototype aviation fatigue risk analytics tool designed to help ariline safety teams identify fatigue risk using duty hours, circadian disruption, flight segments, rest periods, and timezone changes. 
-Built with:
--python
--streamlit
--pandas
+- Calculates a **fatigue risk score** from 0–100
+- Uses operational inputs such as:
+  - Duty hours
+  - Flight segments
+  - Time zone changes
+  - Rest hours before duty
+  - Circadian disruption
+- Displays a fatigue **classification level**:
+  - LOW
+  - MODERATE
+  - HIGH
+- Provides a **mitigation recommendation**
+- Includes a **scenario comparison chart**
+- Includes a **4-day fatigue trend / timeline predictor**
+- Built with an interactive **Streamlit dashboard**
 
-Install dependencies:
+---
+
+## Why AeroVigil Matters
+
+Airlines, cargo carriers, and corporate flight departments often rely on scheduling rules and compliance-based fatigue management, but fatigue risk is still difficult to visualize in a simple, predictive way.
+
+AeroVigil is an early prototype for a future aviation safety platform that could support:
+
+- Fatigue Risk Management Systems (FRMS)
+- Airline safety departments
+- Crew scheduling teams
+- Safety Management Systems (SMS)
+- Human factors research applications
+
+---
+
+## Tech Stack
+
+- **Python**
+- **Streamlit**
+- **Pandas**
+- **Matplotlib**
+
+---
+
+## Project Structure
+
+```bash
+AeroVigil/
+│
+├── app.py
+├── fatigue_calculator.py
+├── requirements.txt
+└── README.md
