@@ -136,9 +136,7 @@ AeroVigil/
 │   Dashboard screenshot
 
 
-</> Markdown
-
-
+````markdown
 # 9. Installation
 
 Clone the repository:
@@ -170,8 +168,6 @@ This project is not intended to replace certified aviation fatigue management sy
 License
 This project is licensed under the MIT License – see the LICENSE file for details.
 The fatigue scoring model used in this prototype is a simplified demonstration and should not be used for operational aviation safety decisions.
-License
-This project is licensed under the MIT License – see the LICENSE file for details.
-The fatigue scoring model used in this prototype is a simplified demonstration and should not be used for operational aviation safety decisions.
-└── aerovigil_2.png
-    Fatigue risk visualization screenshot
+
+
+k visualization screenshot
