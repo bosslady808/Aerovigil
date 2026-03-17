@@ -157,4 +157,8 @@ AeroVigil is a prototype created for **educational, research, and demonstration 
 
 This project is not intended to replace certified aviation fatigue management systems, regulatory compliance tools, or operational decision-making systems used by airlines or aviation authorities.
 
+## License
+
+This project is licensed under the MIT License – see the LICENSE file for details.
+
 The fatigue scoring model used in this prototype is a simplified demonstration and should **not** be used for operational aviation safety decisions.
