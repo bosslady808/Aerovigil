@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 from fatigue_calculator import calculate_fatigue_score
 
 st.set_page_config(page_title="AeroVigil", layout="wide")
@@ -132,3 +133,43 @@ This prototype suggests that current scheduling conditions create a {risk_level.
 Use this result as a decision-support signal for safety review, crew planning, and mitigation action.
         """
     )
+
+    st.divider()
+    st.subheader("Fatigue Trend Scenario Chart")
+
+    scenario_data = [
+        {
+            "Scenario": "Current",
+            "Score": calculate_fatigue_score(
+                duty_hours, segments, timezone_changes, rest_hours, circadian_disruption
+            ),
+        },
+        {
+            "Scenario": "+2 Duty Hours",
+            "Score": calculate_fatigue_score(
+                min(duty_hours + 2, 16), segments, timezone_changes, rest_hours, circadian_disruption
+            ),
+        },
+        {
+            "Scenario": "+1 Segment",
+            "Score": calculate_fatigue_score(
+                duty_hours, min(segments + 1, 8), timezone_changes, rest_hours, circadian_disruption
+            ),
+        },
+        {
+            "Scenario": "-2 Rest Hours",
+            "Score": calculate_fatigue_score(
+                duty_hours, segments, timezone_changes, max(rest_hours - 2, 0), circadian_disruption
+            ),
+        },
+        {
+            "Scenario": "+2 Time Zones",
+            "Score": calculate_fatigue_score(
+                duty_hours, segments, min(timezone_changes + 2, 6), rest_hours, circadian_disruption
+            ),
+        },
+    ]
+
+    scenario_df = pd.DataFrame(scenario_data)
+    st.line_chart(scenario_df.set_index("Scenario"))
+    st.dataframe(scenario_df, width="stretch")
