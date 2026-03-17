@@ -15,9 +15,6 @@ st.write(
 st.divider()
 
 
-# -----------------------------
-# Helper functions
-# -----------------------------
 def classify_risk(score):
     if score < 35:
         return "LOW", "Crew member appears fit for duty based on current inputs.", "green"
@@ -168,9 +165,6 @@ def run_mitigation_simulation(df):
     return simulated
 
 
-# -----------------------------
-# Sidebar single-crew demo inputs
-# -----------------------------
 st.sidebar.header("Single Crew Demo Inputs")
 duty_hours = st.sidebar.slider("Duty Hours", 0, 16, 8)
 segments = st.sidebar.slider("Flight Segments", 1, 8, 2)
@@ -194,10 +188,6 @@ with col3:
 
 st.divider()
 
-
-# -----------------------------
-# Single crew fatigue analysis
-# -----------------------------
 if st.button("Calculate Fatigue Risk", use_container_width=True):
     score = calculate_fatigue_score(
         duty_hours,
@@ -332,12 +322,8 @@ Use this result as a decision-support signal for safety review, crew planning, a
         f"with score {highest_day['Fatigue Score']}/100 ({highest_day['Risk Level']})."
     )
 
-
 st.divider()
 
-# -----------------------------
-# CSV Upload Section
-# -----------------------------
 st.header("Crew Schedule Upload")
 st.write(
     "Upload a CSV file to analyze multiple crew members at once. "
@@ -388,7 +374,6 @@ if uploaded_file is not None:
 
         st.divider()
 
-        # Fleet metrics
         high_count = (analyzed_df["Risk Level"] == "HIGH").sum()
         moderate_count = (analyzed_df["Risk Level"] == "MODERATE").sum()
         low_count = (analyzed_df["Risk Level"] == "LOW").sum()
@@ -406,21 +391,18 @@ if uploaded_file is not None:
 
         st.divider()
 
-        # Multi-crew comparison
         st.subheader("Multi-Crew Risk Comparison")
         comparison_df = analyzed_df[["Crew ID", "Fatigue Score"]].set_index("Crew ID")
         st.bar_chart(comparison_df)
 
         st.divider()
 
-        # Heatmap dashboard
         st.subheader("Fatigue Heatmap Dashboard")
         heatmap_df = make_heatmap_dataframe(analyzed_df)
         plot_heatmap(heatmap_df)
 
         st.divider()
 
-        # Ops Control Command Center
         st.subheader("Ops Control Command Center")
         st.write(
             "This startup-style feature highlights the crews that would need immediate operational review."
@@ -447,7 +429,6 @@ if uploaded_file is not None:
 
         st.divider()
 
-        # Mitigation simulation
         st.subheader("Mitigation Simulation")
         st.write(
             "This simulation shows what happens if operations add 2 hours of rest, remove 1 segment, "
@@ -472,7 +453,6 @@ if uploaded_file is not None:
 
         st.divider()
 
-        # Downloadable report
         st.subheader("Download Analysis Report")
         st.download_button(
             label="Download Results CSV",
