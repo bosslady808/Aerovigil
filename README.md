@@ -136,8 +136,11 @@ AeroVigil/
 │   Dashboard screenshot
 
 
-9. Installation
+# 9. Installation
+
 Clone the repository:
+
+```bash
 git clone https://github.com/bfifita/AeroVigil.git
 cd AeroVigil
 
