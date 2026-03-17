@@ -109,7 +109,7 @@ AeroVigil/
 Clone the repository:
 
 ```bash
-git clone https://github.com/bosslady808/AeroVigil.git
+git clone https://github.com/bfifita/AeroVigil.git
 cd AeroVigil
 ```
 
