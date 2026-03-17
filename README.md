@@ -136,7 +136,6 @@ AeroVigil/
 │   Dashboard screenshot
 
 
-````markdown
 # 9. Installation
 
 Clone the repository:
@@ -147,7 +146,9 @@ cd AeroVigil
 
 pip install -r requirements.txt
 
+
 streamlit run app.py
+
 
 10. Vision
 AeroVigil is more than a calculator — it represents the beginning of a broader aviation safety concept focused on predictive fatigue analytics.
@@ -170,4 +171,4 @@ This project is licensed under the MIT License – see the LICENSE file for deta
 The fatigue scoring model used in this prototype is a simplified demonstration and should not be used for operational aviation safety decisions.
 
 
-k visualization screenshot
+
