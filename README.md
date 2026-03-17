@@ -8,14 +8,14 @@ This project was built as an early proof-of-concept for a larger vision: helping
 
 ---
 
-## Live Demo
+## 1. Live Demo
 
 👉 **AeroVigil App:**  
 https://aerovigil-demo.streamlit.app
 
 ---
 
-## Overview
+## 2. Overview
 
 Fatigue remains one of the most critical human factors issues in aviation safety. AeroVigil explores how operational inputs from crew scheduling and duty periods can be converted into a clear **fatigue risk score**.
 
@@ -23,7 +23,7 @@ This prototype allows users to experiment with different operational scenarios a
 
 ---
 
-## Features
+## 3. Features
 
 - Calculates a **fatigue risk score** from 0–100
 - Uses operational inputs such as:
@@ -43,21 +43,48 @@ This prototype allows users to experiment with different operational scenarios a
 
 ---
 
-## Why AeroVigil Matters
+## 4. How It Works
 
-Airlines, cargo carriers, and corporate flight departments often rely on scheduling rules and compliance-based fatigue management, but fatigue risk is still difficult to visualize in a simple, predictive way.
+The fatigue calculator assigns weighted values to operational risk factors:
 
-AeroVigil is an early prototype for a future aviation safety platform that could support:
+- Longer duty periods increase fatigue risk
+- More flight segments increase workload
+- Crossing time zones increases disruption
+- Greater circadian disruption increases fatigue likelihood
+- More rest before duty lowers fatigue risk
 
-- Fatigue Risk Management Systems (FRMS)
-- Airline safety departments
-- Crew scheduling teams
-- Safety Management Systems (SMS)
-- Human factors research applications
+The total is converted into a capped score from **0 to 100**, making it easier to understand risk severity.
 
 ---
 
-## Tech Stack
+## 5. Example Use Cases
+
+AeroVigil can be used as a prototype concept for:
+
+- Comparing duty schedules
+- Demonstrating fatigue risk visually
+- Exploring human factors research ideas
+- Presenting an aviation safety analytics concept
+- Building future predictive safety tools for airline operations
+
+---
+
+## 6. Future Development Roadmap
+
+Planned future improvements may include:
+
+- Real airline schedule data integration
+- Predictive crew fatigue dashboards
+- AI-based fatigue forecasting
+- Risk alerts for schedulers and safety departments
+- FRMS compliance reporting tools
+- Multi-crew schedule analysis
+- Exportable fatigue risk reports
+- Airline operational scenario modeling
+
+---
+
+## 7. Tech Stack
 
 - **Python**
 - **Streamlit**
@@ -66,7 +93,7 @@ AeroVigil is an early prototype for a future aviation safety platform that could
 
 ---
 
-## Project Structure
+## 8. Project Structure
 
 ```bash
 AeroVigil/
