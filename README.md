@@ -142,20 +142,15 @@ AeroVigil/
 ```
 
 
-# 9. Installation
+## 9. Installation
 
 Clone the repository:
 
 ```bash
 git clone https://github.com/bfifita/AeroVigil.git
 cd AeroVigil
-
 pip install -r requirements.txt
-
-
 streamlit run app.py
-
-
 ```
 
 10. Vision
