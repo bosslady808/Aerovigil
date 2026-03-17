@@ -115,7 +115,7 @@ Planned future improvements may include:
 
 ---
 
-# 8. Project Structure
+## 8. Project Structure
 
 ```bash
 AeroVigil/
@@ -134,6 +134,9 @@ AeroVigil/
 │
 ├── aerovigil_1.png
 │   Dashboard screenshot
+│
+└── aerovigil_2.png
+    Fatigue risk visualization screenshot
 
 
 # 9. Installation
