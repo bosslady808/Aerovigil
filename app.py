@@ -81,10 +81,35 @@ with col3:
 
 st.divider()
 
+# Fatigue assessment
 st.subheader("Fatigue Assessment")
 st.write(f"**Mitigation Recommendation:** {recommendation}")
 st.write(f"**Circadian Phase:** {circadian_phase}")
 st.write(f"**Operational Effectiveness Rating:** {effectiveness_label}")
+
+# Operational alerts
+st.subheader("Operational Alerts")
+
+if score >= 65:
+    st.error("⚠️ High fatigue risk detected. Review schedule, rest opportunity, or mitigation strategy.")
+elif score >= 35:
+    st.warning("⚠️ Moderate fatigue risk detected. Monitor crew condition and consider mitigation.")
+else:
+    st.success("✅ Low fatigue risk detected. No immediate operational alert.")
+
+if alertness < 60:
+    st.error("⚠️ Alertness effectiveness is low. Fatigue exposure may affect operational performance.")
+elif alertness < 80:
+    st.warning("⚠️ Alertness effectiveness is reduced. Monitor for performance degradation.")
+else:
+    st.success("✅ Alertness effectiveness is within an acceptable prototype range.")
+
+if hours_awake >= 18:
+    st.error("⚠️ Hours awake are in a critical range associated with elevated fatigue risk.")
+elif hours_awake >= 12:
+    st.warning("⚠️ Extended wakefulness detected. Monitor fatigue accumulation.")
+else:
+    st.success("✅ Hours awake are within a lower-risk prototype range.")
 
 # Scenario summary
 summary_df = pd.DataFrame(
@@ -99,6 +124,7 @@ summary_df = pd.DataFrame(
             "Fatigue Score",
             "Risk Level",
             "Alertness Effectiveness",
+            "Circadian Phase",
         ],
         "Value": [
             duty_hours,
@@ -110,6 +136,7 @@ summary_df = pd.DataFrame(
             score,
             risk_level,
             f"{alertness:.0f}%",
+            circadian_phase,
         ],
     }
 )
