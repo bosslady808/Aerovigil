@@ -6,16 +6,24 @@
 
 ## AeroVigil Dashboard Preview
 
-AeroVigil is an aviation fatigue risk analytics platform designed to support airline operations with predictive insights, crew risk monitoring, and decision-support tools.
+AeroVigil is an aviation fatigue risk analytics platform designed to support airline operations with predictive insights, crew risk monitoring, and real-time decision support.
 
-### Key Features
-- Real-time fatigue risk scoring
-- 7-day fatigue trend forecasting
-- Scenario simulation for schedule optimization
-- Multi-crew risk monitoring dashboard
-- IROPs (disruption) mode
+---
 
-![AeroVigil Dashboard](aerovigil_v3.png)
+### Executive Dashboard
+![Executive Dashboard](aerovigil_1.png)
+
+### IROPs Impact Analysis
+![IROPs Impact](aerovigil_2.png)
+
+### Plan A vs Plan B Simulator
+![Scenario Comparison](aerovigil_3.png)
+
+### Crew Risk Table
+![Crew Risk Table](aerovigil_4.png)
+
+### Recommendation Engine
+![Recommendation Engine](aerovigil_5.png)
 
 ---
 
