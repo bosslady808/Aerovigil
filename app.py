@@ -20,10 +20,6 @@ def calculate_fatigue_score(
     rest_hours: float,
     circadian_disruption: str
 ) -> int:
-    """
-    Calculates a fatigue risk score from 0 to 100.
-    Higher score = higher fatigue risk.
-    """
     score = 0
 
     # Duty hours
@@ -85,7 +81,7 @@ def fatigue_category(score: int) -> str:
 def fatigue_recommendation(score: int, legal_ok: bool) -> str:
     if not legal_ok:
         return "Not legal to operate. Reassign or remove this crew pairing immediately."
-    if score < 35:
+    elif score < 35:
         return "Fatigue risk appears manageable. Continue monitoring."
     elif score < 70:
         return "Moderate fatigue risk. Consider mitigation such as schedule adjustment, extended rest, or crew support."
@@ -93,11 +89,7 @@ def fatigue_recommendation(score: int, legal_ok: bool) -> str:
         return "High fatigue risk. Consider crew swap, reassignment, or delaying operation if alternatives are limited."
 
 
-def legal_status(duty_hours: float, rest_hours: float) -> tuple:
-    """
-    Simplified operational legality check.
-    This is NOT FAA-certified logic — demo only.
-    """
+def legal_status(duty_hours: float, rest_hours: float):
     legal_duty_limit = 14
     minimum_rest = 10
 
@@ -105,13 +97,11 @@ def legal_status(duty_hours: float, rest_hours: float) -> tuple:
 
     if is_legal:
         return True, "YES"
-    return False, "NO"
+    else:
+        return False, "NO"
 
 
 def build_trend_data(base_duty, base_segments, base_tz, base_rest, base_circadian):
-    """
-    Creates a simple 4-day fatigue trend based on user inputs.
-    """
     days = ["Day 1", "Day 2", "Day 3", "Day 4"]
     adjustments = [
         (0.0, 0, 0, 0.0),
@@ -240,9 +230,11 @@ with left:
 - **Circadian Disruption:** {circadian_disruption}
 """
     )
-    st.success(f"**Recommendation:** {base_recommendation}") if base_legal_ok and base_score < 70 else st.warning(
-        f"**Recommendation:** {base_recommendation}"
-    )
+
+    if base_legal_ok and base_score < 70:
+        st.success(f"Recommendation: {base_recommendation}")
+    else:
+        st.warning(f"Recommendation: {base_recommendation}")
 
 with right:
     st.markdown("## IROPs / Disruption Scenario")
@@ -258,10 +250,11 @@ with right:
 - **Operational Delay:** {delay_hours} hrs
 """
     )
+
     if not irrops_legal_ok or irrops_score >= 70:
-        st.error(f"**Recommendation:** {irrops_recommendation}")
+        st.error(f"Recommendation: {irrops_recommendation}")
     else:
-        st.warning(f"**Recommendation:** {irrops_recommendation}")
+        st.warning(f"Recommendation: {irrops_recommendation}")
 
 st.markdown("---")
 
@@ -313,23 +306,24 @@ st.markdown("---")
 st.markdown("## Operations Notes")
 
 if irrops_score > base_score:
-    st.write(
-        f"- The IROPs scenario increases fatigue exposure by **{irrops_score - base_score} points**."
-    )
+    st.write(f"- The IROPs scenario increases fatigue exposure by **{irrops_score - base_score} points**.")
 else:
     st.write("- The disruption scenario did not increase fatigue exposure.")
 
 if base_legal_ok and irrops_legal_ok and irrops_score >= 70:
     st.write("- Crew may remain legal under basic duty/rest thresholds, but fatigue risk is still elevated.")
+
 if not irrops_legal_ok:
     st.write("- Disruption scenario crosses simplified legality limits and should trigger reassignment review.")
+
 if timezone_changes >= 2 or irrops_timezone >= 2:
     st.write("- Multiple time-zone transitions may increase circadian fatigue burden.")
+
 if segments >= 4 or irrops_segments >= 4:
     st.write("- Higher segment count may increase workload and cumulative fatigue risk.")
 
 # ---------------------------------------------------
-# BOTTOM DISCLAIMER
+# DISCLAIMER
 # ---------------------------------------------------
 st.markdown("---")
 st.caption(
