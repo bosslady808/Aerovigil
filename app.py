@@ -3,7 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from fatigue_calculator import calculate_fatigue_score
 
-st.set_page_config(page_title="AeroVigil ", page_icon="✈️", layout="wide")
+st.set_page_config(page_title="AeroVigil", page_icon="✈️", layout="wide")
+
 
 # ---------- HELPERS ----------
 def get_risk_level(score):
@@ -14,6 +15,7 @@ def get_risk_level(score):
     else:
         return "HIGH", "🔴"
 
+
 def get_recommendation(score):
     if score < 35:
         return "Crew schedule appears acceptable. Continue monitoring fatigue factors."
@@ -21,6 +23,7 @@ def get_recommendation(score):
         return "Consider mitigation such as added rest, reduced workload, or closer fatigue monitoring."
     else:
         return "Immediate review recommended. Reassess duty assignment, rest opportunity, and operational exposure."
+
 
 def score_row(row, irops_mode=False):
     score = calculate_fatigue_score(
@@ -34,13 +37,16 @@ def score_row(row, irops_mode=False):
         score = min(100, score + 10)
     return score
 
+
 # ---------- HEADER ----------
-st.title("✈️ AeroVigil V3")
+st.title("✈️ AeroVigil")
 st.subheader("Predictive Fatigue Risk Analytics for Airline Operations")
 st.write(
-    "AeroVigil V3 is a prototype airline fatigue decision-support dashboard designed to help "
-    "operations leaders identify elevated crew fatigue exposure, monitor risk trends, and test mitigation scenarios."
+    "AeroVigil is a prototype airline fatigue decision-support dashboard designed to help "
+    "operations leaders identify elevated crew fatigue exposure, monitor risk trends, "
+    "and test mitigation scenarios."
 )
+
 
 # ---------- SIDEBAR ----------
 st.sidebar.header("Operations Controls")
@@ -52,6 +58,7 @@ segments = st.sidebar.slider("Flight Segments", 1, 8, 2)
 timezone_changes = st.sidebar.slider("Time Zone Changes", 0, 6, 0)
 rest_hours = st.sidebar.slider("Rest Hours Before Duty", 0, 16, 10)
 circadian_disruption = st.sidebar.slider("Circadian Disruption Level", 0, 10, 3)
+
 
 # ---------- SINGLE CREW SCORE ----------
 single_score = calculate_fatigue_score(
@@ -68,7 +75,8 @@ if irops_mode:
 risk_level, risk_icon = get_risk_level(single_score)
 recommendation = get_recommendation(single_score)
 
-# ---------- TOP ALERT BANNER ----------
+
+# ---------- ALERT BANNER ----------
 if risk_level == "HIGH":
     st.error(f"🚨 HIGH FATIGUE RISK DETECTED — Score: {single_score}/100 | Immediate review recommended.")
 elif risk_level == "MODERATE":
@@ -81,7 +89,8 @@ if irops_mode:
 
 st.divider()
 
-# ---------- LOAD CSV ----------
+
+# ---------- LOAD CREW DATA ----------
 try:
     crew_df = pd.read_csv("crew_data.csv")
     crew_df["Fatigue Score"] = crew_df.apply(lambda row: score_row(row, irops_mode), axis=1)
@@ -90,15 +99,13 @@ try:
 
     crews_at_risk = (crew_df["Fatigue Score"] >= 65).sum()
     avg_rest = round(crew_df["Rest Hours Before Duty"].mean(), 1)
-    avg_score = round(crew_df["Fatigue Score"].mean(), 1)
-
 except Exception:
     crew_df = None
     crews_at_risk = 0
     avg_rest = rest_hours
-    avg_score = single_score
 
-# ---------- KPI CARDS ----------
+
+# ---------- KPI METRICS ----------
 kpi1, kpi2, kpi3, kpi4 = st.columns(4)
 
 with kpi1:
@@ -115,6 +122,7 @@ with kpi4:
 
 st.divider()
 
+
 # ---------- TABS ----------
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Executive Dashboard",
@@ -124,7 +132,8 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Mitigation Engine"
 ])
 
-# ---------- TAB 1 ----------
+
+# ---------- TAB 1: EXECUTIVE DASHBOARD ----------
 with tab1:
     st.subheader("Executive Dashboard")
 
@@ -164,7 +173,8 @@ with tab1:
         st.markdown("### Recommendation")
         st.info(recommendation)
 
-# ---------- TAB 2 ----------
+
+# ---------- TAB 2: TREND FORECAST ----------
 with tab2:
     st.subheader("7-Day Fatigue Forecast")
 
@@ -192,7 +202,8 @@ with tab2:
 
     st.dataframe(trend_df, use_container_width=True)
 
-# ---------- TAB 3 ----------
+
+# ---------- TAB 3: SCENARIO SIMULATOR ----------
 with tab3:
     st.subheader("Scenario Simulator")
 
@@ -242,7 +253,8 @@ with tab3:
     st.write("- Reduced flight segments by 1")
     st.write("- Reduced circadian disruption by 1")
 
-# ---------- TAB 4 ----------
+
+# ---------- TAB 4: CREW RISK TABLE ----------
 with tab4:
     st.subheader("Crew Risk Table")
 
@@ -270,7 +282,8 @@ with tab4:
     else:
         st.warning("crew_data.csv not found. Add your crew file to display the multi-crew operations table.")
 
-# ---------- TAB 5 ----------
+
+# ---------- TAB 5: MITIGATION ENGINE ----------
 with tab5:
     st.subheader("Mitigation Engine")
 
@@ -294,5 +307,9 @@ with tab5:
         st.write("- Escalate to operations or safety review")
         st.write("- Apply fatigue mitigation before release to duty")
 
+
 st.divider()
-st.caption("Prototype for demonstration purposes only. AeroVigil is not an FAA-approved dispatch, scheduling, or medical decision tool.")
+st.caption(
+    "Prototype for demonstration purposes only. AeroVigil is not an FAA-approved dispatch, "
+    "scheduling, or medical decision tool."
+)
