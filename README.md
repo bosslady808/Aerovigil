@@ -123,6 +123,8 @@ AeroVigil/
 ├── README.md
 └── aerovigil_v3.png
 
+```markdown
+---
 
 Vision
 AeroVigil represents an early-stage concept for predictive aviation safety analytics.
