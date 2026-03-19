@@ -1,4 +1,3 @@
-import math
 import random
 from datetime import datetime, timedelta
 
@@ -11,9 +10,9 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# =========================
-# HELPERS / CORE LOGIC
-# =========================
+# =========================================
+# HELPERS
+# =========================================
 def clamp(value, low=0, high=100):
     return max(low, min(high, value))
 
@@ -21,7 +20,7 @@ def clamp(value, low=0, high=100):
 def risk_badge(score):
     if score >= 75:
         return "HIGH"
-    if score >= 50:
+    elif score >= 50:
         return "MODERATE"
     return "LOW"
 
@@ -69,15 +68,15 @@ def mitigation_recommendation(score, legal_ok, reserve_available, departure_dela
     if not legal_ok and not reserve_available:
         return "Escalate to Crew Scheduling / OCC leadership. Current plan may not be legal."
     if score >= 75 and reserve_available:
-        return "Swap crew or reduce exposure before departure."
+        return "Swap crew or assign reserve before departure."
     if score >= 75 and departure_delay >= 60:
-        return "Delay recovery plan should include proactive crew replacement evaluation."
+        return "Review recovery plan and evaluate proactive crew replacement."
     if score >= 50:
         return "Monitor closely, compare alternate crew scenarios, and brief operations leadership."
     return "Proceed with caution. Risk currently manageable."
 
 
-def generate_timeline(base_score, days=5):
+def generate_timeline(base_score, days=6):
     scores = []
     today = datetime.now().date()
     current = base_score
@@ -204,9 +203,14 @@ def build_sample_cases():
     return pd.DataFrame(enriched)
 
 
-# =========================
+# =========================================
+# DATA
+# =========================================
+df_cases = build_sample_cases()
+
+# =========================================
 # SIDEBAR
-# =========================
+# =========================================
 st.sidebar.title("AeroVigil V4")
 st.sidebar.caption("Operations Risk Console")
 
@@ -214,6 +218,8 @@ mode = st.sidebar.radio(
     "Select View",
     [
         "Operations Console",
+        "IROPs Mode 🚨",
+        "Multi-Flight Disruption Simulator ✈️",
         "Case Simulator",
         "Scenario Comparison",
         "Executive Snapshot",
@@ -221,38 +227,33 @@ mode = st.sidebar.radio(
 )
 
 st.sidebar.markdown("---")
-st.sidebar.subheader("About V4")
+st.sidebar.subheader("About")
 st.sidebar.write(
     """
-AeroVigil V4 reframes fatigue as an **operational risk indicator**.
+AeroVigil V4 reframes fatigue as an operational risk indicator.
 
-This version is designed more like an airline operations console:
+This version includes:
 - alert queue
 - legality + fatigue awareness
-- action recommendations
-- scenario simulator
-- executive KPI view
+- IROPs decision support
+- multi-flight disruption logic
+- scenario comparison
+- executive view
 """
 )
 
-# =========================
-# DATA
-# =========================
-df_cases = build_sample_cases()
-
-# =========================
+# =========================================
 # HEADER
-# =========================
+# =========================================
 st.title("AeroVigil")
 st.subheader("Predictive Crew Risk & Operational Decision Support")
-
 st.caption(
-    "A prototype console for evaluating crew legality, fatigue risk, and disruption recovery options in one decision view."
+    "A prototype console for evaluating crew legality, fatigue risk, disruption recovery, and operational decision-making in one view."
 )
 
-# =========================
+# =========================================
 # OPERATIONS CONSOLE
-# =========================
+# =========================================
 if mode == "Operations Console":
     total_cases = len(df_cases)
     high_cases = int((df_cases["Risk Level"] == "HIGH").sum())
@@ -269,11 +270,10 @@ if mode == "Operations Console":
 
     st.markdown("---")
 
-    left, right = st.columns([1.2, 1])
+    left, right = st.columns([1.3, 1])
 
     with left:
         st.markdown("### Alert Queue")
-
         display_df = df_cases[
             [
                 "Case ID",
@@ -293,7 +293,6 @@ if mode == "Operations Console":
     with right:
         st.markdown("### Case Detail Panel")
         selected_case = st.selectbox("Select Case", df_cases["Case ID"].tolist())
-
         selected = df_cases[df_cases["Case ID"] == selected_case].iloc[0]
 
         st.write(f"**Flight:** {selected['Flight']}")
@@ -319,13 +318,9 @@ if mode == "Operations Console":
     st.markdown("---")
 
     st.markdown("### Action Engine")
-    st.write(
-        "This section translates the case into likely operational actions rather than just displaying a score."
-    )
+    a1, a2, a3 = st.columns(3)
 
-    action_col1, action_col2, action_col3 = st.columns(3)
-
-    with action_col1:
+    with a1:
         st.markdown("#### Immediate Action")
         if not selected["Legal OK"]:
             st.write("- Escalate legality concern")
@@ -337,16 +332,16 @@ if mode == "Operations Console":
             st.write("- Continue monitoring")
             st.write("- Keep alternate plan ready")
 
-    with action_col2:
+    with a2:
         st.markdown("#### Recovery Impact")
         if selected["Delay Minutes"] >= 60:
             st.write("- Delay likely to cascade")
             st.write("- Check downstream crew utilization")
         else:
             st.write("- Limited immediate disruption")
-            st.write("- Downline impact currently manageable")
+            st.write("- Downline impact manageable")
 
-    with action_col3:
+    with a3:
         st.markdown("#### Resource Position")
         if selected["Reserve Available"]:
             st.write("- Reserve crew available")
@@ -357,18 +352,264 @@ if mode == "Operations Console":
 
     st.markdown("---")
     st.markdown("### Fatigue Trend Preview")
-    trend_df = generate_timeline(selected["Fatigue Score"], days=6)
-    trend_df = trend_df.set_index("Date")
+    trend_df = generate_timeline(selected["Fatigue Score"], days=6).set_index("Date")
     st.line_chart(trend_df)
 
-# =========================
+# =========================================
+# IROPs MODE
+# =========================================
+elif mode == "IROPs Mode 🚨":
+    st.markdown("## IROPs Mode 🚨")
+    st.write("Simulate a single disruption scenario and compare immediate crew recovery options.")
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+        delay = st.slider("Flight Delay (minutes)", 0, 300, 90, 10)
+        segments = st.slider("Remaining Segments", 1, 5, 3)
+        timezone_changes = st.slider("Timezone Changes", 0, 5, 2)
+
+    with c2:
+        duty_hours = st.slider("Current Duty Hours", 4.0, 16.0, 11.5, 0.5)
+        rest_hours = st.slider("Previous Rest Hours", 6.0, 16.0, 9.0, 0.5)
+        circadian = st.slider("Circadian Disruption", 0, 2, 2)
+
+    st.markdown("---")
+    st.markdown("### Crew Recovery Options")
+
+    reserve_available = st.checkbox("Reserve Crew Available", value=True)
+    include_swap = st.checkbox("Include Crew Swap Option", value=True)
+
+    # Continue current crew
+    option_a_duty = duty_hours + (delay / 60)
+    legal_a, _ = legality_check(rest_hours, option_a_duty)
+    score_a = calculate_fatigue_score(
+        option_a_duty, segments, timezone_changes, rest_hours, circadian
+    )
+    call_a = fatigue_call_probability(score_a, rest_hours, option_a_duty, circadian)
+    priority_a = operational_priority(score_a, legal_a, delay, reserve_available)
+
+    # Reserve crew
+    if reserve_available:
+        legal_b, _ = legality_check(12, 8)
+        score_b = calculate_fatigue_score(8, segments, timezone_changes, 12, 1)
+        call_b = fatigue_call_probability(score_b, 12, 8, 1)
+        priority_b = operational_priority(score_b, legal_b, delay, True)
+    else:
+        legal_b, score_b, call_b, priority_b = False, 100, 95, 100
+
+    # Swap crew
+    if include_swap:
+        legal_c, _ = legality_check(11, 9)
+        score_c = calculate_fatigue_score(9, segments, timezone_changes, 11, 1)
+        call_c = fatigue_call_probability(score_c, 11, 9, 1)
+        priority_c = operational_priority(score_c, legal_c, delay, reserve_available)
+    else:
+        legal_c, score_c, call_c, priority_c = False, 100, 95, 100
+
+    comparison = pd.DataFrame(
+        {
+            "Option": ["Continue Crew", "Reserve Crew", "Swap Crew"],
+            "Legality": [
+                "LEGAL" if legal_a else "CHECK",
+                "LEGAL" if legal_b else "CHECK",
+                "LEGAL" if legal_c else "CHECK",
+            ],
+            "Fatigue Score": [score_a, score_b, score_c],
+            "Risk Level": [risk_badge(score_a), risk_badge(score_b), risk_badge(score_c)],
+            "Fatigue Call %": [call_a, call_b, call_c],
+            "Operational Priority": [priority_a, priority_b, priority_c],
+        }
+    )
+
+    st.markdown("### Decision Comparison")
+    st.dataframe(comparison, use_container_width=True, hide_index=True)
+
+    best_option = comparison.sort_values(by="Operational Priority", ascending=True).iloc[0]
+
+    st.markdown("### Recommendation Engine")
+    if best_option["Option"] == "Continue Crew":
+        st.warning("Continue current crew — monitor closely and protect downstream operation.")
+    elif best_option["Option"] == "Reserve Crew":
+        st.success("Assign reserve crew — best operational outcome based on current inputs.")
+    else:
+        st.info("Swap crew — balanced recovery option under current disruption conditions.")
+
+    st.markdown("### Operational Insight")
+    st.write(
+        f"""
+- **Delay Impact:** {delay} minutes
+- **Best Option:** {best_option['Option']}
+- **Risk Score:** {best_option['Fatigue Score']}
+- **Fatigue Call Probability:** {best_option['Fatigue Call %']}%
+- **Priority Level:** {best_option['Operational Priority']}
+
+This simulates OCC-style recovery decision support during disruptions.
+"""
+    )
+
+# =========================================
+# MULTI-FLIGHT DISRUPTION SIMULATOR
+# =========================================
+elif mode == "Multi-Flight Disruption Simulator ✈️":
+    st.markdown("## Multi-Flight Disruption Simulator ✈️")
+    st.write("Simulate a network-style disruption and rank flights by operational urgency.")
+
+    top1, top2, top3 = st.columns(3)
+    with top1:
+        disruption_type = st.selectbox(
+            "Disruption Type",
+            ["Weather", "Crew Shortage", "ATC Delay", "Maintenance", "System Irregularity"],
+        )
+    with top2:
+        flight_count = st.slider("Number of Affected Flights", 2, 8, 4)
+    with top3:
+        reserve_pool = st.slider("Available Reserve Crews", 0, 5, 2)
+
+    st.markdown("---")
+    st.markdown("### Network Inputs")
+
+    flights = []
+    for i in range(flight_count):
+        with st.expander(f"Flight {i+1}"):
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                flight_num = st.text_input(f"Flight Number {i+1}", value=f"DL10{i+1}", key=f"fnum_{i}")
+                route = st.text_input(f"Route {i+1}", value="ATL → JFK", key=f"route_{i}")
+                delay = st.slider(f"Delay Minutes {i+1}", 0, 300, 60 + (i * 15), 5, key=f"delay_{i}")
+
+            with col2:
+                duty_hours = st.slider(f"Duty Hours {i+1}", 4.0, 16.0, 10.0 + (i * 0.5), 0.5, key=f"duty_{i}")
+                rest_hours = st.slider(f"Rest Hours {i+1}", 6.0, 16.0, 10.0, 0.5, key=f"rest_{i}")
+                segments = st.slider(f"Segments {i+1}", 1, 6, 2 + (i % 3), key=f"seg_{i}")
+
+            with col3:
+                tz = st.slider(f"Timezone Changes {i+1}", 0, 5, i % 3, key=f"tz_{i}")
+                circadian = st.slider(f"Circadian Disruption {i+1}", 0, 2, 1, key=f"circ_{i}")
+                passengers = st.slider(f"Passenger Impact {i+1}", 50, 300, 120 + (i * 20), 10, key=f"pax_{i}")
+
+            legal_ok, _ = legality_check(rest_hours, duty_hours + (delay / 60))
+            score = calculate_fatigue_score(
+                duty_hours + (delay / 60), segments, tz, rest_hours, circadian
+            )
+            call_prob = fatigue_call_probability(score, rest_hours, duty_hours + (delay / 60), circadian)
+
+            # passenger impact factor for network severity
+            passenger_factor = min(passengers / 300, 1.0) * 20
+
+            # reserve assumption: reserve available only if pool still exists
+            reserve_assumed = reserve_pool > 0
+            priority = operational_priority(score, legal_ok, delay, reserve_assumed)
+            network_priority = clamp(round(priority + passenger_factor, 1))
+
+            recommendation = mitigation_recommendation(score, legal_ok, reserve_assumed, delay)
+
+            flights.append(
+                {
+                    "Flight": flight_num,
+                    "Route": route,
+                    "Disruption": disruption_type,
+                    "Delay Minutes": delay,
+                    "Duty Hours": round(duty_hours + (delay / 60), 1),
+                    "Rest Hours": rest_hours,
+                    "Segments": segments,
+                    "Timezone Changes": tz,
+                    "Circadian": circadian,
+                    "Passenger Impact": passengers,
+                    "Legality": "LEGAL" if legal_ok else "CHECK",
+                    "Fatigue Score": score,
+                    "Risk Level": risk_badge(score),
+                    "Fatigue Call %": call_prob,
+                    "Priority Score": priority,
+                    "Network Priority": network_priority,
+                    "Recommendation": recommendation,
+                }
+            )
+
+    network_df = pd.DataFrame(flights).sort_values(by="Network Priority", ascending=False).reset_index(drop=True)
+
+    st.markdown("---")
+    st.markdown("### Network Alert Board")
+    st.dataframe(
+        network_df[
+            [
+                "Flight",
+                "Route",
+                "Delay Minutes",
+                "Passenger Impact",
+                "Legality",
+                "Fatigue Score",
+                "Risk Level",
+                "Fatigue Call %",
+                "Network Priority",
+            ]
+        ],
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.markdown("### Reserve Crew Allocation Suggestion")
+    allocation_df = network_df.copy()
+    allocation_df["Reserve Assigned"] = "No"
+
+    reserves_left = reserve_pool
+    for idx in allocation_df.index:
+        if reserves_left > 0 and allocation_df.loc[idx, "Network Priority"] >= 55:
+            allocation_df.loc[idx, "Reserve Assigned"] = "Yes"
+            reserves_left -= 1
+
+    st.dataframe(
+        allocation_df[
+            [
+                "Flight",
+                "Route",
+                "Network Priority",
+                "Risk Level",
+                "Legality",
+                "Reserve Assigned",
+                "Recommendation",
+            ]
+        ],
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.markdown("### Executive Network Summary")
+    total_high = int((network_df["Risk Level"] == "HIGH").sum())
+    total_checks = int((network_df["Legality"] == "CHECK").sum())
+    avg_network_priority = round(network_df["Network Priority"].mean(), 1)
+    top_flight = network_df.iloc[0]["Flight"]
+
+    s1, s2, s3, s4 = st.columns(4)
+    s1.metric("Affected Flights", len(network_df))
+    s2.metric("High-Risk Flights", total_high)
+    s3.metric("Legality Checks", total_checks)
+    s4.metric("Avg Network Priority", avg_network_priority)
+
+    if total_checks > 0:
+        st.error(
+            f"Highest urgency flight: {top_flight}. Network includes legality-sensitive flying that should be escalated."
+        )
+    elif total_high >= 2:
+        st.warning(
+            f"Highest urgency flight: {top_flight}. Multiple flights are elevated and reserves should be prioritized carefully."
+        )
+    else:
+        st.success(
+            f"Highest urgency flight: {top_flight}. Network disruption appears manageable with current reserve capacity."
+        )
+
+    chart_df = network_df.set_index("Flight")[["Fatigue Score", "Network Priority"]]
+    st.markdown("### Network Risk Chart")
+    st.bar_chart(chart_df)
+
+# =========================================
 # CASE SIMULATOR
-# =========================
+# =========================================
 elif mode == "Case Simulator":
     st.markdown("### Case Simulator")
-    st.write(
-        "Use this to test a crew scenario during irregular operations and see risk, legality, and likely action."
-    )
+    st.write("Test a single crew scenario and evaluate fatigue, legality, and operational action.")
 
     col1, col2 = st.columns(2)
 
@@ -412,22 +653,12 @@ elif mode == "Case Simulator":
     simulated_timeline = generate_timeline(score, days=7).set_index("Date")
     st.line_chart(simulated_timeline)
 
-    st.markdown("### Operational Interpretation")
-    st.write(
-        f"""
-- **Legality:** {"Acceptable" if legal_ok else "Needs review"}
-- **Fatigue posture:** {risk}
-- **Call-off probability:** {call_prob}%
-- **Operational recommendation:** {recommendation}
-"""
-    )
-
-# =========================
+# =========================================
 # SCENARIO COMPARISON
-# =========================
+# =========================================
 elif mode == "Scenario Comparison":
     st.markdown("### Scenario Comparison")
-    st.write("Compare Plan A vs Plan B for decision-making during disruptions.")
+    st.write("Compare Plan A vs Plan B for disruption decision-making.")
 
     left, right = st.columns(2)
 
@@ -508,14 +739,12 @@ elif mode == "Scenario Comparison":
     ).set_index("Plan")
     st.bar_chart(chart_df)
 
-# =========================
+# =========================================
 # EXECUTIVE SNAPSHOT
-# =========================
+# =========================================
 elif mode == "Executive Snapshot":
     st.markdown("### Executive Snapshot")
-    st.write(
-        "A leadership-level view of active operational risk posture across cases."
-    )
+    st.write("Leadership-level view of active operational risk posture.")
 
     total_cases = len(df_cases)
     avg_risk = round(df_cases["Fatigue Score"].mean(), 1)
@@ -559,7 +788,7 @@ elif mode == "Executive Snapshot":
     st.markdown("### Management Insight")
     st.write(
         """
-AeroVigil V4 is designed to answer a more operational question:
+AeroVigil is built to answer a more operational question:
 
 **Not just “Is this crew legal?”**  
 but also  
