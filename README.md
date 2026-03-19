@@ -1,170 +1,116 @@
-# AeroVigil
+# AeroVigil – Operations Risk Console
 
-**Predictive Fatigue Risk Analytics for Aviation Safety**
+AeroVigil is a predictive aviation decision-support prototype designed to help airline operations teams evaluate crew options during disruptions (IROPs).
 
----
+It combines:
+- Fatigue risk indicators
+- Legal compliance awareness
+- Scenario comparison
+- Multi-flight disruption simulation
 
-## AeroVigil Dashboard Preview
-
-AeroVigil is an aviation fatigue risk analytics platform designed to support airline operations with predictive insights, crew risk monitoring, and real-time decision support.
-
----
-
-### Executive Dashboard
-![Executive Dashboard](aerovigil_1.png)
-
-### IROPs Impact Analysis
-![IROPs Impact](aerovigil_2.png)
-
-### Plan A vs Plan B Simulator
-![Scenario Comparison](aerovigil_3.png)
-
-### Crew Risk Table
-![Crew Risk Table](aerovigil_4.png)
-
-### Recommendation Engine
-![Recommendation Engine](aerovigil_5.png)
+**Live Demo:** https://aerovigil-demo.streamlit.app
 
 ---
 
-## Live Demo
+## Problem
 
-👉 https://aerovigil-demo.streamlit.app
+Airline operations today rely heavily on:
+- Legal compliance (rest rules)
+- Availability
 
----
+But often lack:
+- Predictive fatigue awareness
+- Proactive decision support during disruptions
 
-## Overview
-
-Fatigue remains one of the most critical human factors challenges in aviation safety. AeroVigil explores how operational inputs from crew scheduling and duty periods can be transformed into a clear, interpretable **fatigue risk score**.
-
-This prototype demonstrates how predictive analytics can support airline operations by identifying fatigue risk **before flights operate**, enabling proactive safety decisions.
-
----
-
-## Core Features
-
-- Fatigue risk scoring (0–100 scale)
-- Risk classification:
-  - LOW
-  - MODERATE
-  - HIGH
-- Real-time mitigation recommendations
-- 7-day fatigue trend forecasting
-- Scenario simulation for schedule adjustments
-- Multi-crew risk table using CSV data
-- IROPs (Irregular Operations) fatigue modeling
-- Interactive dashboard built with Streamlit
+This creates a gap between **“legal to operate”** and **“safe to operate.”**
 
 ---
 
-## How It Works
+## Solution
 
-The fatigue model evaluates key operational inputs:
-
-- Duty hours  
-- Flight segments  
-- Time zone changes  
-- Rest hours before duty  
-- Circadian disruption  
-
-Each factor contributes to a weighted fatigue score, which is normalized to a **0–100 risk scale**.
-
-### Workflow
-
-Operational Inputs  
-↓  
-Fatigue Risk Algorithm  
-↓  
-Fatigue Score (0–100)  
-↓  
-Risk Classification  
-↓  
-Mitigation Guidance  
-↓  
-Dashboard Visualization  
+AeroVigil introduces a unified decision view that helps operations teams:
+- Evaluate fatigue risk across crews
+- Compare multiple scheduling scenarios
+- Simulate IROPs situations
+- Identify higher-risk crew assignments early
 
 ---
 
-## Example Use Cases
+## Key Features
 
-AeroVigil can support:
+### Operations Risk Console
+- Central dashboard for fatigue risk monitoring
+- Alert-based decision support
+- Risk visibility for operational choices
 
-- Crew scheduling scenario comparisons  
-- Fatigue risk visualization for safety teams  
-- Human factors research demonstrations  
-- Early-stage aviation safety analytics development  
-- Concept validation for predictive safety tools  
+### IROPs Mode
+- Simulates disruption scenarios
+- Evaluates operational impact of crew fatigue
+- Supports fast decision-making under pressure
 
----
+### Multi-Flight Disruption Simulator
+- Models multiple flights competing for limited reserve crews
+- Highlights operational risk when resources are constrained
+- Helps visualize reserve allocation pressure
 
-## Future Development Roadmap
+### Case Simulator
+- Allows users to test individual disruption and crew risk scenarios
+- Demonstrates how different conditions affect fatigue indicators
 
-- Integration with real airline scheduling data  
-- Predictive fatigue alert system  
-- AI-driven fatigue forecasting models  
-- FRMS (Fatigue Risk Management System) alignment  
-- Safety Management System (SMS) integration  
-- Multi-day crew scheduling optimization  
-- Exportable fatigue risk reports  
-- Real-time operational dashboards for airlines  
+### Scenario Comparison Tool
+- Compare Plan A vs Plan B crew assignments
+- Supports structured decision-making for operations teams
+
+### Executive Snapshot
+- High-level KPI view for leadership visibility
+- Risk trends and operational overview
 
 ---
 
 ## Tech Stack
 
-- Python  
-- Streamlit  
-- Pandas  
-- Matplotlib  
+- Python
+- Streamlit
+- Pandas
 
 ---
 
-## Project Structure
+## Current Limitations (Prototype Status)
 
-```bash
-AeroVigil/
-│
-├── app.py
-├── fatigue_calculator.py
-├── crew_data.csv
-├── requirements.txt
-├── README.md
-└── aerovigil_v3.png
-```
+- Fatigue model is simplified and not FAA-certified
+- Uses simulated and hard-coded data rather than live airline data
+- Fatigue timeline generation includes randomized demo behavior
+- No automated test suite is currently implemented
+
+---
+
+## Known Issues
+
+- Reserve allocation logic in the multi-flight simulator needs refinement
+- Fatigue scoring logic exists in more than one place and should be unified
+- Data pipeline is not yet connected to bundled CSV or external data sources
+
+---
+
+## Future Development
+
+- Unified fatigue model across all modules
+- Data-driven inputs from CSV or APIs
+- Expanded IROPs decision engine
+- Crew reassignment recommendations
+- Real-time operational dashboards
+- Improved consistency between simulation and scoring logic
+
 ---
 
 ## Vision
 
-AeroVigil represents an early-stage concept for predictive aviation safety analytics.
-
-The long-term goal is to help aviation organizations transition from reactive fatigue management to proactive, data-driven risk prediction, supporting both operational decision-making and safety systems such as SMS and FRMS.
+AeroVigil aims to become an operational decision-support tool that bridges the gap between legality, availability, and real-world fatigue risk in airline operations.
 
 ---
 
-## Author
+## Founder
 
 **Bosslady Fifita**  
-Founder — AeroVigil  
-
-MS Aeronautics  
-
-Focus Areas:
-- Aviation Human Factors  
-- Fatigue Risk Management  
-- Aviation Safety Systems  
-- Predictive Safety Analytics  
-
----
-
-## Disclaimer
-
-AeroVigil is a prototype created for educational, research, and demonstration purposes only.
-
-It is not intended to replace certified aviation fatigue management systems, regulatory compliance tools, or operational decision-making systems used by airlines or aviation authorities.
-
----
-
-## License
-
-This project is licensed under the MIT License.  
-See the `LICENSE` file for details.
+Founder, AeroVigil  
+Aviation Operations • Human Factors • Safety Systems
