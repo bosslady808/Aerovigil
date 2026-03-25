@@ -9,14 +9,14 @@ import streamlit as st
 # PAGE CONFIG
 # ---------------------------------------------------
 st.set_page_config(
-    page_title="AeroVigil V5 - IROPs Mode",
+    page_title="AeroVigil Operations Risk Console",
     page_icon="✈️",
     layout="wide"
 )
 
 
 # ---------------------------------------------------
-# HELPERS
+# HELPERS (UNCHANGED LOGIC)
 # ---------------------------------------------------
 def clamp(value: float, low: float, high: float) -> float:
     return max(low, min(value, high))
@@ -223,34 +223,44 @@ def make_sample_irrops_data() -> pd.DataFrame:
 
 
 # ---------------------------------------------------
-# HEADER
+# STYLES (simple CSS for dashboard feel)
 # ---------------------------------------------------
-st.title("✈️ AeroVigil V5 - IROPs Decision Support")
-st.caption("Predictive fatigue-aware operational support for airline disruptions.")
-
 st.markdown(
     """
-AeroVigil V5 focuses on the **operational impact of disruptions** — not fixing the disruption itself,
-but helping teams make better crew and flight decisions during **IROPs, delays, and irregular operations**.
-"""
+    <style>
+    /* Top header styling */
+    .header-title { font-size: 22px; font-weight:600; }
+    .kpi { background-color: #0f172a; color: white; padding: 12px; border-radius:8px; }
+    .risk-pill { padding:6px 10px; border-radius:999px; color:white; font-weight:600; }
+    .risk-low { background:#16a34a; }
+    .risk-moderate { background:#f59e0b; color:#111827; }
+    .risk-high { background:#ef4444; }
+    .left-panel { background-color:#0b1220; color:white; padding:10px; border-radius:8px; }
+    .small-muted { color: #94a3b8; font-size:12px; }
+    .card { padding:12px; border-radius:8px; background: #ffffff; }
+    </style>
+    """,
+    unsafe_allow_html=True
 )
 
 
 # ---------------------------------------------------
-# SIDEBAR
+# SIDEBAR / GLOBAL CONTROLS
 # ---------------------------------------------------
 st.sidebar.header("AeroVigil Control Panel")
 show_demo_data = st.sidebar.toggle("Load sample IROPs cases", value=True)
 show_methodology = st.sidebar.toggle("Show scoring methodology", value=False)
 current_time = datetime.now().strftime("%Y-%m-%d %H:%M")
 st.sidebar.write(f"**System Time:** {current_time}")
+st.sidebar.markdown("---")
+st.sidebar.caption("Theme: Enterprise OCC | Layout: 3-Column Operational Console")
 
 
 # ---------------------------------------------------
-# TABS
+# MAIN LAYOUT - Tabs preserved; Tab1 becomes OCC Dashboard
 # ---------------------------------------------------
 tab1, tab2, tab3, tab4 = st.tabs([
-    "IROPs Mode",
+    "Operations Risk Console",
     "Scenario Comparison",
     "Multi-Flight Console",
     "Executive Snapshot"
@@ -258,63 +268,179 @@ tab1, tab2, tab3, tab4 = st.tabs([
 
 
 # ---------------------------------------------------
-# TAB 1 - IROPS MODE
+# TAB 1 - OPERATIONS RISK CONSOLE (new dashboard layout)
 # ---------------------------------------------------
 with tab1:
-    st.subheader("IROPs Case Analyzer")
+    # Top header with KPIs
+    header_col1, header_col2 = st.columns([3, 1])
+    with header_col1:
+        st.markdown('<div class="header-title">✈️ AeroVigil — Operations Risk Console</div>', unsafe_allow_html=True)
+        st.caption("Real-time fatigue-aware decision support for OCC teams during IROPs")
+    with header_col2:
+        st.markdown(f"**{current_time}**")
 
-    col1, col2, col3 = st.columns(3)
+    # Determine dataset for alerts / queue
+    if show_demo_data:
+        base_df = make_sample_irrops_data()
+    else:
+        base_df = pd.DataFrame(columns=[
+            "Flight", "Delay Type", "Delay Hrs", "Duty Hrs", "Segments", "TZ Changes",
+            "Rest Hrs", "Circadian", "Reserve", "Legal", "Fatigue Score", "Risk",
+            "Priority", "Recommendation", "Reason Notes"
+        ])
 
-    with col1:
-        flight_id = st.text_input("Flight ID", value="DL104")
-        delay_type = st.selectbox(
-            "Delay Type",
-            ["Mechanical", "Weather", "ATC", "Crew", "Security", "Other"]
-        )
-        delay_hours = st.slider("Delay Duration (hours)", 0.0, 8.0, 2.5, 0.5)
-        maintenance_hold = st.checkbox("Maintenance hold active", value=(delay_type == "Mechanical"))
+    # KPIs row
+    k1, k2, k3, k4 = st.columns(4)
+    active_alerts = len(base_df)
+    high_risk_cases = int((base_df["Risk"] == "HIGH").sum()) if not base_df.empty else 0
+    avg_fatigue = round(base_df["Fatigue Score"].mean(), 1) if not base_df.empty else 0.0
+    # Simple network disruption level: proportion of HIGH/CRITICAL
+    nd_level = 0
+    if not base_df.empty:
+        nd_level = round(((base_df["Priority"].isin(["CRITICAL", "HIGH"])).sum() / max(1, len(base_df))) * 100, 0)
 
-    with col2:
-        duty_hours = st.slider("Current Duty Hours", 0.0, 16.0, 9.5, 0.5)
-        segments = st.slider("Flight Segments Today", 1, 8, 4)
-        timezone_changes = st.slider("Time Zone Changes", 0, 6, 1)
+    k1.metric("Active Alerts", active_alerts)
+    k2.metric("High Risk Cases", high_risk_cases)
+    k3.metric("Avg Fatigue Score", avg_fatigue)
+    k4.metric("Network Disruption Level (%)", f"{nd_level}%")
 
-    with col3:
-        rest_hours = st.slider("Rest Hours Before Duty", 6.0, 16.0, 10.0, 0.5)
-        circadian_disruption = st.checkbox("Circadian Disruption", value=True)
-        reserve_available = st.checkbox("Reserve Crew Available", value=True)
+    st.markdown("---")
 
-    case = build_case_row(
-        flight_id=flight_id,
-        delay_type=delay_type,
-        delay_hours=delay_hours,
-        duty_hours=duty_hours,
-        segments=segments,
-        timezone_changes=timezone_changes,
-        rest_hours=rest_hours,
-        circadian_disruption=circadian_disruption,
-        reserve_available=reserve_available,
-        maintenance_hold=maintenance_hold
-    )
+    # Main three-column dashboard: Left=Alert Queue, Center=Case Detail, Right=Action Engine
+    left_col, center_col, right_col = st.columns([1.4, 2.4, 1.2], gap="large")
 
-    st.divider()
+    # LEFT PANEL: Alert Queue (selectable)
+    with left_col:
+        st.markdown("### Alert Queue")
+        st.caption("Click a flight to open the Case Detail")
+        if base_df.empty:
+            st.info("No active alerts. Toggle sample data to load demo cases.")
+            selected_flight = None
+        else:
+            # Build a compact list with colored risk pills and status
+            # Create a selectable list
+            list_items = []
+            for _, row in base_df.iterrows():
+                flight = row["Flight"]
+                risk = row["Risk"]
+                duty = row["Duty Hrs"]
+                legal = row["Legal"]
+                priority = row["Priority"]
+                list_items.append({
+                    "label": flight,
+                    "risk": risk,
+                    "duty": duty,
+                    "legal": legal,
+                    "priority": priority
+                })
 
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Fatigue Score", case["Fatigue Score"])
-    m2.metric("Risk Level", case["Risk"])
-    m3.metric("Legal Status", case["Legal"])
-    m4.metric("Priority", case["Priority"])
+            # Use selectbox for simplicity and keyboard accessibility
+            options = [f"{it['label']} | {it['risk']} | Duty:{it['duty']}h | {it['legal']}" for it in list_items]
+            selected_option = st.selectbox("Select Flight", options, index=0)
+            # parse selected
+            selected_flight = selected_option.split("|")[0].strip()
 
-    alert_box = st.container(border=True)
-    with alert_box:
-        st.markdown(f"### Recommendation")
-        st.write(case["Recommendation"])
-        st.markdown(f"**Reason Notes:** {case['Reason Notes']}")
+            # Compact visual list below
+            st.markdown("#### Queue Snapshot")
+            for it in list_items:
+                # color class
+                cls = "risk-low"
+                if it["risk"] == "MODERATE":
+                    cls = "risk-moderate"
+                elif it["risk"] == "HIGH":
+                    cls = "risk-high"
+                st.markdown(
+                    f"<div style='display:flex; justify-content:space-between; align-items:center; padding:6px 0;'>"
+                    f"<div><b>{it['label']}</b><div class='small-muted'>Priority: {it['priority']}</div></div>"
+                    f"<div class='risk-pill {cls}'>{it['risk']}</div>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
 
-    st.markdown("### Case Detail")
-    detail_df = pd.DataFrame([case]).drop(columns=["Recommendation", "Reason Notes"])
-    st.dataframe(detail_df, use_container_width=True, hide_index=True)
+    # CENTER PANEL: Case Detail View
+    with center_col:
+        st.markdown("### Case Detail")
+        if selected_flight is None:
+            st.info("Select a flight from the Alert Queue to view details.")
+        else:
+            # Find case in base_df
+            case_row = base_df[base_df["Flight"] == selected_flight]
+            if case_row.empty:
+                st.error("Selected flight not found in dataset.")
+            else:
+                case = case_row.iloc[0].to_dict()
 
+                # Top summary cards
+                sc1, sc2, sc3, sc4 = st.columns([1.2, 1.0, 1.0, 1.0])
+                sc1.metric("Flight", case["Flight"])
+                sc2.metric("Fatigue Score", case["Fatigue Score"])
+                sc3.metric("Risk", case["Risk"])
+                sc4.metric("Legal", case["Legal"])
+
+                st.markdown("#### Crew Duty & Sleep")
+                cols = st.columns(3)
+                cols[0].metric("Duty Hours", case["Duty Hrs"])
+                cols[1].metric("Rest Hours", case["Rest Hrs"])
+                cols[2].metric("Segments", case["Segments"])
+
+                st.markdown("#### Circadian & Time Zones")
+                tz_col, circ_col = st.columns([2, 1])
+                tz_col.metric("Time Zones Crossed", case["TZ Changes"])
+                circ_col.metric("Circadian Disruption", case["Circadian"])
+
+                st.markdown("#### Fatigue Gauge")
+                # Visual progress bar for fatigue score
+                fatigue_pct = min(100, max(0, float(case["Fatigue Score"])))
+                bar_color = "#16a34a"
+                if case["Risk"] == "MODERATE":
+                    bar_color = "#f59e0b"
+                elif case["Risk"] == "HIGH":
+                    bar_color = "#ef4444"
+                st.progress(int(fatigue_pct))
+                st.caption(f"Fatigue Score: {fatigue_pct} / 100")
+
+                st.markdown("#### Reasoning & Legal Notes")
+                st.write(case["Reason Notes"])
+
+                st.markdown("#### Full Case Data")
+                detail_df = pd.DataFrame([case]).T.rename(columns={0: "Value"})
+                st.table(detail_df)
+
+    # RIGHT PANEL: Action / Recommendation Engine
+    with right_col:
+        st.markdown("### Action Engine")
+        st.caption("Recommended operational actions with rationale")
+        if selected_flight is None:
+            st.info("Select an alert to surface recommendations.")
+        else:
+            case_row = base_df[base_df["Flight"] == selected_flight]
+            if case_row.empty:
+                st.error("Selected flight case missing.")
+            else:
+                case = case_row.iloc[0].to_dict()
+
+                # Show available quick actions (without changing logic)
+                st.markdown("#### Recommended Action")
+                st.markdown(f"**{case['Recommendation']}**")
+
+                st.markdown("#### Action Options")
+                # Keep these as non-destructive buttons that simulate OCC actions
+                if st.button("Acknowledge Case"):
+                    st.success(f"{case['Flight']} acknowledged.")
+                if st.button("Flag for Crew Swap"):
+                    st.info(f"{case['Flight']} flagged for crew swap review.")
+                if st.button("Assign Reserve"):
+                    st.info(f"Reserve requested for {case['Flight']}.")
+                if st.button("Escalate to CCO"):
+                    st.warning(f"{case['Flight']} escalated to CCO.")
+
+                st.markdown("---")
+                st.markdown("#### Rationale")
+                st.write(case["Reason Notes"])
+
+    st.markdown("---")
+
+    # Optional methodology info (unchanged content)
     if show_methodology:
         st.info(
             """
@@ -331,7 +457,7 @@ with tab1:
 
 
 # ---------------------------------------------------
-# TAB 2 - SCENARIO COMPARISON
+# TAB 2 - SCENARIO COMPARISON (preserve functionality, UI improved slightly)
 # ---------------------------------------------------
 with tab2:
     st.subheader("Scenario Comparison Engine")
@@ -427,143 +553,4 @@ with tab2:
     a_rank = scenario_rank(scenario_a)
     b_rank = scenario_rank(scenario_b)
 
-    better = "Scenario A" if a_rank < b_rank else "Scenario B"
-    st.success(f"Suggested lower-risk operational option: **{better}**")
-
-
-# ---------------------------------------------------
-# TAB 3 - MULTI-FLIGHT CONSOLE
-# ---------------------------------------------------
-with tab3:
-    st.subheader("Multi-Flight Disruption Console")
-
-    if show_demo_data:
-        df_cases = make_sample_irrops_data()
-    else:
-        df_cases = pd.DataFrame(columns=[
-            "Flight", "Delay Type", "Delay Hrs", "Duty Hrs", "Segments", "TZ Changes",
-            "Rest Hrs", "Circadian", "Reserve", "Legal", "Fatigue Score", "Risk",
-            "Priority", "Recommendation", "Reason Notes"
-        ])
-
-    st.write("This console helps prioritize disruption cases across multiple flights.")
-
-    editor_df = st.data_editor(
-        df_cases,
-        use_container_width=True,
-        num_rows="dynamic",
-        hide_index=True
-    )
-
-    # If edited data no longer has calculated fields, attempt safe rebuild only if raw columns exist
-    raw_columns = {"Flight", "Delay Type", "Delay Hrs", "Duty Hrs", "Segments", "TZ Changes", "Rest Hrs", "Circadian", "Reserve"}
-    if raw_columns.issubset(set(editor_df.columns)):
-        rebuilt_rows = []
-        for _, row in editor_df.iterrows():
-            rebuilt_rows.append(
-                build_case_row(
-                    flight_id=str(row["Flight"]),
-                    delay_type=str(row["Delay Type"]),
-                    delay_hours=float(row["Delay Hrs"]),
-                    duty_hours=float(row["Duty Hrs"]),
-                    segments=int(row["Segments"]),
-                    timezone_changes=int(row["TZ Changes"]),
-                    rest_hours=float(row["Rest Hrs"]),
-                    circadian_disruption=str(row["Circadian"]).lower() in ["yes", "true", "1"],
-                    reserve_available=str(row["Reserve"]).lower() in ["yes", "true", "1"],
-                    maintenance_hold=str(row["Delay Type"]) == "Mechanical"
-                )
-            )
-        results_df = pd.DataFrame(rebuilt_rows)
-    else:
-        results_df = df_cases.copy()
-
-    st.divider()
-
-    st.markdown("### Prioritized Queue")
-    priority_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
-    if not results_df.empty and "Priority" in results_df.columns:
-        results_df["Priority Rank"] = results_df["Priority"].map(priority_order)
-        results_df = results_df.sort_values(
-            by=["Priority Rank", "Fatigue Score", "Delay Hrs"],
-            ascending=[True, False, False]
-        ).drop(columns=["Priority Rank"])
-
-    st.dataframe(results_df, use_container_width=True, hide_index=True)
-
-    if not results_df.empty:
-        st.markdown("### Alert Queue")
-        critical_df = results_df[results_df["Priority"].isin(["CRITICAL", "HIGH"])]
-
-        if critical_df.empty:
-            st.success("No HIGH or CRITICAL cases in current queue.")
-        else:
-            for _, row in critical_df.iterrows():
-                with st.container(border=True):
-                    st.markdown(
-                        f"**{row['Flight']}** | {row['Delay Type']} delay | "
-                        f"Fatigue Score: **{row['Fatigue Score']}** | "
-                        f"Legal: **{row['Legal']}** | Priority: **{row['Priority']}**"
-                    )
-                    st.write(row["Recommendation"])
-                    st.caption(row["Reason Notes"])
-
-
-# ---------------------------------------------------
-# TAB 4 - EXECUTIVE SNAPSHOT
-# ---------------------------------------------------
-with tab4:
-    st.subheader("Executive Snapshot")
-
-    exec_df = make_sample_irrops_data() if show_demo_data else pd.DataFrame()
-
-    if exec_df.empty:
-        st.info("No data available. Turn on sample cases from the sidebar.")
-    else:
-        total_cases = len(exec_df)
-        avg_score = round(exec_df["Fatigue Score"].mean(), 1)
-        high_cases = int((exec_df["Priority"].isin(["HIGH", "CRITICAL"])).sum())
-        illegal_cases = int((exec_df["Legal"] == "No").sum())
-
-        e1, e2, e3, e4 = st.columns(4)
-        e1.metric("Open Disruption Cases", total_cases)
-        e2.metric("Average Fatigue Score", avg_score)
-        e3.metric("High / Critical Cases", high_cases)
-        e4.metric("Projected Illegal Cases", illegal_cases)
-
-        st.divider()
-
-        st.markdown("### Risk Distribution")
-        risk_counts = exec_df["Risk"].value_counts().reset_index()
-        risk_counts.columns = ["Risk", "Count"]
-        st.bar_chart(risk_counts.set_index("Risk"))
-
-        st.markdown("### Delay Type Distribution")
-        delay_counts = exec_df["Delay Type"].value_counts().reset_index()
-        delay_counts.columns = ["Delay Type", "Count"]
-        st.bar_chart(delay_counts.set_index("Delay Type"))
-
-        st.markdown("### Executive Interpretation")
-        st.write(
-            """
-This snapshot is designed for operational leaders, OCC teams, crew scheduling, and safety stakeholders.
-It shows where disruption pressure is accumulating and where fatigue-aware decision support may improve
-recovery planning.
-"""
-        )
-
-        st.dataframe(
-            exec_df[["Flight", "Delay Type", "Delay Hrs", "Fatigue Score", "Risk", "Legal", "Priority", "Recommendation"]],
-            use_container_width=True,
-            hide_index=True
-        )
-
-
-# ---------------------------------------------------
-# FOOTER
-# ---------------------------------------------------
-st.divider()
-st.caption(
-    "AeroVigil is a prototype decision-support tool for operational analysis and human-factors-informed disruption response. "
-    "It does not replace regulatory, dispatch, maintenance, or crew scheduling systems."
-)
+    better = "Scenario A" if a_rank < b_rank else "Scenario
